@@ -1,26 +1,26 @@
-# Etapa 1 - build da aplicação com Gradle
-FROM eclipse-temurin:17-jdk-alpine AS build
+# Etapa 1 - Build com Gradle
+FROM gradle:8.4-jdk17 AS build
 WORKDIR /app
 
-# Copia arquivos Gradle primeiro (cache mais eficiente)
-COPY gradlew .
-COPY gradle gradle
+# Copia só os arquivos de configuração primeiro (melhora cache)
 COPY build.gradle settings.gradle ./
+COPY gradle gradle
+COPY gradlew ./
 
-# Baixa dependências antes (melhora o cache)
-RUN ./gradlew build -x test || return 0
+# Baixa dependências
+RUN ./gradlew dependencies || return 0
 
-# Agora copia o resto do código
+# Copia o código da aplicação
 COPY . .
 
-# Roda build completo (gera o JAR)
-RUN ./gradlew build -x test
+# Roda o build (gera JAR em build/libs)
+RUN ./gradlew clean build -x test
 
-# Etapa 2 - imagem final só com o JAR
+# Etapa 2 - Imagem final só com o JAR
 FROM eclipse-temurin:17-jdk-alpine
 WORKDIR /app
 
-# Copia o JAR gerado na etapa anterior
+# Copia o JAR gerado da etapa anterior
 COPY --from=build /app/build/libs/*SNAPSHOT.jar app.jar
 
 EXPOSE 8080
