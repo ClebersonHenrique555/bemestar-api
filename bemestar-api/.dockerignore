@@ -1,5 +1,22 @@
+# Ignorar diretórios de build e cache
 .gradle
 build
 out
-!gradlew
-!gradlew.bat
+bin
+
+# Ignorar configs locais
+*.iml
+*.ipr
+*.iws
+.idea
+
+# Ignorar arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Logs
+*.log
