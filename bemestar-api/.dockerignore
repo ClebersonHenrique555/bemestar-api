@@ -1,4 +1,0 @@
-.gradle
-build
-out
-!build/libs/bemestar-api-0.0.1-SNAPSHOT.jar
