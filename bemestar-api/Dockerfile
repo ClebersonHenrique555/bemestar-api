@@ -2,25 +2,21 @@
 FROM gradle:8.4-jdk17 AS builder
 WORKDIR /workspace
 
-# Copia apenas os arquivos de configuração primeiro (cache mais eficiente)
-COPY build.gradle settings.gradle gradlew ./
-COPY gradle gradle
-
-# Baixa dependências
-RUN ./gradlew dependencies || return 0
-
-# Copia o restante do código
+# Copia tudo
 COPY . .
 
-# Gera o jar executável (Spring Boot gera em build/libs/)
-RUN ./gradlew clean bootJar -x test
+# Dá permissão de execução pro gradlew (às vezes quebra no Render)
+RUN chmod +x ./gradlew
 
-# Etapa 2: imagem final
+# Roda o build para gerar o bootJar
+RUN ./gradlew clean bootJar -x test --no-daemon
+
+# Etapa 2: imagem final com apenas o JAR
 FROM eclipse-temurin:17-jdk-alpine
 WORKDIR /app
 
-# Copia o JAR gerado na etapa anterior
+# Copia o jar gerado
 COPY --from=builder /workspace/build/libs/*.jar app.jar
 
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
